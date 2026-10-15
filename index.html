@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#10131b">
+    <meta name="description" content="A private, local-first workout tracker for your weekly training plan.">
+    <title>MyGym | Training Log</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="app.js" defer></script>
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="topbar">
+        <a class="wordmark" href="#workout" aria-label="MyGym home">
+          <span class="wordmark-mark" aria-hidden="true">M</span>
+          <span>MY<span class="wordmark-accent">GYM</span></span>
+        </a>
+        <nav class="primary-nav" aria-label="Main navigation">
+          <button class="nav-button is-active" data-view="workout" type="button"><span aria-hidden="true">◉</span> Workout</button>
+          <button class="nav-button" data-view="admin" type="button"><span aria-hidden="true">⌘</span> Plan setup</button>
+        </nav>
+        <button class="icon-button backup-shortcut" id="exportButton" type="button" title="Export backup" aria-label="Export backup">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m0 0 4-4m-4 4-4-4M5 17v3h14v-3"/></svg>
+        </button>
+      </header>
+
+      <main>
+        <section class="view is-visible" id="workoutView" aria-labelledby="workoutHeading">
+          <div class="page-heading">
+            <div>
+              <p class="eyebrow"><span class="live-dot"></span> TRAINING LOG <span class="eyebrow-rule"></span> <span id="todayLabel">TODAY</span></p>
+              <h1 id="workoutHeading">Make it <span>count.</span></h1>
+            </div>
+            <label class="date-control">
+              <span class="sr-only">Workout date</span>
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3v3m10-3v3M4 9h16M5 5h14a1 1 0 0 1 1 1v13H4V6a1 1 0 0 1 1-1Z"/></svg>
+              <input id="workoutDate" type="date">
+            </label>
+          </div>
+
+          <div class="week-strip" id="weekStrip" role="group" aria-label="Choose workout day"></div>
+
+          <div class="workout-summary">
+            <div class="summary-copy">
+              <p class="eyebrow" id="sessionDateLabel">MONDAY · WEEK 01</p>
+              <h2 id="dayTitle">Loading your plan</h2>
+              <p class="summary-subtitle" id="daySubtitle">Your next session, ready when you are.</p>
+            </div>
+            <div class="summary-stat"><strong id="exerciseCount">00</strong><span>EXERCISES</span></div>
+            <div class="summary-art" aria-hidden="true"><span class="art-sun"></span><span class="art-grid"></span><span class="art-line"></span></div>
+          </div>
+
+          <div class="section-bar">
+            <h3>Today's work <span class="section-count" id="listCount">0</span></h3>
+            <span class="save-state" id="saveState"><span class="save-dot"></span> Saved on this device</span>
+          </div>
+          <div class="exercise-list" id="exerciseList"></div>
+          <div class="workout-actions" id="workoutActions" hidden>
+            <button class="button button-primary" id="finishDayButton" type="button"><span aria-hidden="true">✓</span> Finish workout</button>
+            <button class="button button-quiet" id="missDayButton" type="button">Miss this day</button>
+          </div>
+          <section class="storage-note" aria-label="Local data information">
+            <span class="storage-icon" aria-hidden="true">⌂</span>
+            <p><strong>Your training stays yours.</strong> Data is saved in this browser on this device. Export a backup before clearing browser data or switching devices.</p>
+            <button class="text-button" id="noteExportButton" type="button">Export data <span aria-hidden="true">↗</span></button>
+          </section>
+        </section>
+
+        <section class="view" id="adminView" aria-labelledby="adminHeading" hidden>
+          <div class="page-heading admin-heading">
+            <div>
+              <p class="eyebrow"><span class="live-dot"></span> YOUR ROUTINE <span class="eyebrow-rule"></span> PLAN EDITOR</p>
+              <h1 id="adminHeading">Build your <span>week.</span></h1>
+              <p class="heading-note">Shape the plan around your life. Rest days are part of the routine.</p>
+            </div>
+          </div>
+          <div class="admin-layout">
+            <section class="admin-panel exercise-editor" aria-labelledby="exerciseEditorHeading">
+              <div class="panel-heading"><div><p class="eyebrow">01 / EXERCISE LIBRARY</p><h2 id="exerciseEditorHeading">Add an exercise</h2></div><span class="panel-icon" aria-hidden="true">＋</span></div>
+              <form id="exerciseForm" class="form-grid">
+                <input id="exerciseId" type="hidden">
+                <label class="field field-wide">Exercise name<input id="exerciseName" name="name" maxlength="60" placeholder="e.g. Barbell bench press" required></label>
+                <label class="field">Focus area<select id="exerciseFocus" name="focus"><option>Chest</option><option>Back</option><option>Shoulders</option><option>Triceps</option><option>Biceps</option><option>Legs</option><option>Core</option><option>Cardio</option><option>Other</option></select></label>
+                <label class="field field-wide">Description <span class="optional">OPTIONAL</span><textarea id="exerciseDescription" name="description" rows="2" maxlength="180" placeholder="Form cue, equipment, or anything worth remembering"></textarea></label>
+                <div class="form-actions field-wide"><button class="button button-primary" id="saveExerciseButton" type="submit">Add to library <span aria-hidden="true">＋</span></button><button class="button button-quiet" id="cancelEditButton" type="button" hidden>Cancel</button></div>
+              </form>
+              <div class="library-list" id="libraryList"></div>
+            </section>
+
+            <section class="admin-panel schedule-editor" aria-labelledby="scheduleHeading">
+              <div class="panel-heading"><div><p class="eyebrow">02 / WEEKLY SCHEDULE</p><h2 id="scheduleHeading">Place it in your week</h2></div><span class="panel-icon panel-icon-cyan" aria-hidden="true">▦</span></div>
+              <form id="scheduleForm" class="schedule-form">
+                <label class="field">Exercise<select id="scheduleExercise" required><option value="">Choose from your library</option></select></label>
+                <div class="schedule-row"><label class="field">Day<select id="scheduleDay"><option value="0">Monday</option><option value="1">Tuesday</option><option value="2">Wednesday</option><option value="3">Thursday</option><option value="4">Friday</option><option value="5">Saturday</option><option value="6">Sunday</option></select></label><label class="field set-count-field">Sets<input id="scheduleSets" type="number" min="1" max="20" value="3" required></label></div>
+                <button class="button button-secondary" type="submit">Add to day <span aria-hidden="true">↗</span></button>
+              </form>
+              <div class="schedule-week" id="scheduleWeek"></div>
+            </section>
+          </div>
+
+          <section class="history-section" aria-labelledby="historyHeading">
+            <div class="section-bar"><h3 id="historyHeading">Recent sessions <span class="section-count" id="historyCount">0</span></h3><div class="data-actions"><button class="text-button" id="exportDataButton" type="button">Export JSON <span aria-hidden="true">↓</span></button><label class="text-button import-label" for="importFile">Import JSON <span aria-hidden="true">↑</span><input id="importFile" type="file" accept="application/json,.json"></label></div></div>
+            <div id="historyList" class="history-list"></div>
+          </section>
+        </section>
+      </main>
+      <footer class="app-footer"><span>MYGYM / TRAIN YOUR WAY</span><span>LOCAL FIRST <i aria-hidden="true">✳</i> NO ACCOUNT</span></footer>
+    </div>
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  </body>
+</html>
