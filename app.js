@@ -107,7 +107,7 @@
         const adjustment = skips >= 2 ? -2.5 : skips === 1 ? 0 : 2.5;
         weight = Math.max(0, Number(weight) + adjustment);
       }
-      return { reps: oldSet?.reps ?? '', weight };
+      return { reps: oldSet?.reps ?? '', weight, done: false };
     });
     return { exerciseId: exercise.id, name: exercise.name, focus: exercise.focus, description: exercise.description, status: 'in-progress', sets };
   }
@@ -173,12 +173,14 @@
     const isSkipped = item.status === 'skipped';
     const isComplete = item.status === 'completed';
     const canEdit = !isSkipped && !isComplete && session?.status !== 'completed' && session?.status !== 'missed';
-    const setsHtml = item.sets.map((set, setIndex) => `<tr><td><span class="set-number">${String(setIndex + 1).padStart(2, '0')}</span></td><td><label class="sr-only" for="reps-${exerciseIndex}-${setIndex}">${escapeHtml(item.name)} set ${setIndex + 1} reps</label><input class="set-input" id="reps-${exerciseIndex}-${setIndex}" type="number" min="0" max="999" inputmode="numeric" placeholder="—" value="${escapeHtml(set.reps)}" data-exercise="${exerciseIndex}" data-set="${setIndex}" data-field="reps" ${canEdit ? '' : 'disabled'}></td><td><label class="sr-only" for="weight-${exerciseIndex}-${setIndex}">${escapeHtml(item.name)} set ${setIndex + 1} weight in kilograms</label><input class="set-input" id="weight-${exerciseIndex}-${setIndex}" type="number" min="0" max="9999" step="0.5" inputmode="decimal" placeholder="—" value="${escapeHtml(set.weight)}" data-exercise="${exerciseIndex}" data-set="${setIndex}" data-field="weight" ${canEdit ? '' : 'disabled'}><span class="unit-label">KG</span></td><td>${canEdit ? `<button class="remove-set" type="button" data-remove-set="${exerciseIndex}" data-set="${setIndex}" title="Remove set" aria-label="Remove set ${setIndex + 1}">×</button>` : ''}</td></tr>`).join('');
+    const allSetsDone = item.sets.length > 0 && item.sets.every(set => set.done === true);
+    const doneCount = item.sets.filter(set => set.done === true).length;
+    const setsHtml = item.sets.map((set, setIndex) => `<tr class="${set.done ? 'is-set-done' : ''}"><td><span class="set-number">${String(setIndex + 1).padStart(2, '0')}</span></td><td><label class="sr-only" for="reps-${exerciseIndex}-${setIndex}">${escapeHtml(item.name)} set ${setIndex + 1} reps</label><input class="set-input" id="reps-${exerciseIndex}-${setIndex}" type="number" min="0" max="999" inputmode="numeric" placeholder="—" value="${escapeHtml(set.reps)}" data-exercise="${exerciseIndex}" data-set="${setIndex}" data-field="reps" ${canEdit ? '' : 'disabled'}></td><td><label class="sr-only" for="weight-${exerciseIndex}-${setIndex}">${escapeHtml(item.name)} set ${setIndex + 1} weight in kilograms</label><input class="set-input" id="weight-${exerciseIndex}-${setIndex}" type="number" min="0" max="9999" step="0.5" inputmode="decimal" placeholder="—" value="${escapeHtml(set.weight)}" data-exercise="${exerciseIndex}" data-set="${setIndex}" data-field="weight" ${canEdit ? '' : 'disabled'}><span class="unit-label">KG</span></td><td>${canEdit ? `<button class="set-done-button${set.done ? ' is-done' : ''}" type="button" data-toggle-set="${exerciseIndex}" data-set="${setIndex}" aria-pressed="${set.done === true}" aria-label="${set.done ? 'Mark set ' + (setIndex + 1) + ' not done' : 'Mark set ' + (setIndex + 1) + ' done'}">${set.done ? '✓ Done' : '✓ Done?'}</button>` : set.done ? '<span class="set-done-label">✓ DONE</span>' : ''}</td><td>${canEdit ? `<button class="remove-set" type="button" data-remove-set="${exerciseIndex}" data-set="${setIndex}" title="Remove set" aria-label="Remove set ${setIndex + 1}">×</button>` : ''}</td></tr>`).join('');
     const statusText = isSkipped ? 'SKIPPED' : isComplete ? 'COMPLETE' : `${item.sets.length} SETS`;
     return `<article class="exercise-card${isSkipped ? ' is-skipped' : ''}${isComplete ? ' is-complete' : ''}" data-card="${exerciseIndex}">
       <div class="exercise-top"><span class="focus-tag" style="border-color:${FOCUS_COLORS[item.focus] ?? FOCUS_COLORS.Other}">${escapeHtml(item.focus)}</span><div class="exercise-identity"><h4>${escapeHtml(item.name)}</h4><p>${escapeHtml(item.description || 'Log your reps and working weight.')}</p></div><span class="exercise-meta">${item.sets.length} SET${item.sets.length === 1 ? '' : 'S'}</span><span class="exercise-status${isSkipped ? ' skipped' : ''}">${statusText}</span></div>
-      ${!isSkipped ? `<div class="set-table-wrap"><table class="set-table"><thead><tr><th>SET</th><th>REPS</th><th>WEIGHT</th><th></th></tr></thead><tbody>${setsHtml}</tbody></table></div>` : ''}
-      ${canEdit ? `<div class="exercise-controls"><button class="small-action" type="button" data-add-set="${exerciseIndex}">＋ Add set</button><button class="small-action" type="button" data-complete-exercise="${exerciseIndex}">✓ Complete exercise</button><button class="small-action danger" type="button" data-skip-exercise="${exerciseIndex}">Skip</button></div>` : ''}
+      ${!isSkipped ? `<div class="set-table-wrap"><table class="set-table"><thead><tr><th>SET</th><th>REPS</th><th>WEIGHT</th><th>DONE</th><th></th></tr></thead><tbody>${setsHtml}</tbody></table></div>` : ''}
+      ${canEdit ? `<div class="exercise-controls"><button class="small-action" type="button" data-add-set="${exerciseIndex}">＋ Add set</button><span class="set-progress">${doneCount}/${item.sets.length} SETS DONE</span><button class="small-action" type="button" data-complete-exercise="${exerciseIndex}" ${allSetsDone ? '' : 'disabled'}>✓ Complete exercise</button><button class="small-action danger" type="button" data-skip-exercise="${exerciseIndex}">Skip</button></div>` : ''}
     </article>`;
   }
 
@@ -201,6 +203,15 @@
 
   function wireExerciseActions(day) {
     $$('.set-input').forEach(input => input.addEventListener('input', () => persistExerciseInput(input)));
+    $$('[data-toggle-set]').forEach(button => button.addEventListener('click', () => {
+      const session = ensureSession(day);
+      if (!session) return;
+      const set = session.exercises[Number(button.dataset.toggleSet)]?.sets[Number(button.dataset.set)];
+      if (!set) return;
+      set.done = set.done !== true;
+      saveData();
+      renderWorkout();
+    }));
     $$('[data-add-set]').forEach(button => button.addEventListener('click', () => {
       const session = ensureSession(day);
       if (!session) return;
@@ -220,6 +231,7 @@
       const session = ensureSession(day);
       if (!session) return;
       const item = session.exercises[Number(button.dataset.completeExercise)];
+      if (!item.sets.length || !item.sets.every(set => set.done === true)) return;
       item.status = 'completed';
       saveData();
       renderWorkout();
@@ -380,7 +392,10 @@
   $('#finishDayButton').addEventListener('click', () => {
     const session = ensureSession(mondayIndex(selectedDate));
     if (!session) return;
-    session.exercises.forEach(item => { if (item.status === 'in-progress') item.status = 'completed'; });
+    if (session.exercises.some(item => item.status === 'in-progress')) {
+      showToast('Mark every set done and complete each exercise first.');
+      return;
+    }
     session.status = 'completed';
     saveData();
     renderWorkout();

@@ -6,7 +6,7 @@ MyGym is a dependency-free static app. Open `index.html` directly for local use,
 
 On the first successful HTTPS visit, the service worker caches the app shell so it can be reopened offline. `file://` use does not enable service workers. Workout data is saved only in this browser's local storage; it does not sync between devices or require an account.
 
-Use **Plan setup** to add exercises and assign them to weekdays. Log reps and optional kilograms in **Workout**; set edits save as you type. In Plan setup, export a JSON backup before clearing browser data or moving to another device. Importing a backup replaces the data in the current browser. The saved data envelope is versioned (`schemaVersion: 1`).
+Use **Plan setup** to add exercises and assign them to weekdays. Log reps and optional kilograms in **Workout**; set edits save as you type. Mark each set done as you complete it, then complete the exercise once every set is checked. In Plan setup, export a JSON backup before clearing browser data or moving to another device. Importing a backup replaces the data in the current browser. The saved data envelope is versioned (`schemaVersion: 1`).
 
 ## Product Behavior
 
@@ -27,7 +27,7 @@ Build a phone-first workout tracker for following a weekly gym routine, recordin
 - Let the user open another weekday's plan and view its exercises.
 - For each exercise, show its focus area, name, description, and planned sets.
 - On an exercise's first workout, show empty reps and weight fields. Let the user add sets and enter reps and weight for each set; weight is optional where it does not apply.
-- Save a workout as the user records it, and provide clear actions to finish, skip an exercise, or miss the whole day's workout.
+- Save a workout as the user records it, track completion for each individual set, and allow an exercise to be completed only after all of its sets are marked done. Provide clear actions to finish, skip an exercise, or miss the whole day's workout.
 
 ### Admin / Plan Setup
 
