@@ -6,6 +6,10 @@ MyGym is a dependency-free static app. Open `index.html` directly for local use,
 
 On the first successful HTTPS visit, the service worker caches the app shell so it can be reopened offline. `file://` use does not enable service workers. Workout data is saved only in this browser's local storage; it does not sync between devices or require an account.
 
+### Static asset cache versioning
+
+CSS and JavaScript URLs include a release version query string (for example, `?v=1.1.0`) so browsers fetch changed assets after deployment. For every CSS or JavaScript change, increment the **minor** component (`1.1.0` → `1.2.0`) in both asset URLs in `index.html` and `CACHE_NAME` / `APP_FILES` in `sw.js`. Keep those values identical; changing the service worker cache name also replaces its cached app shell on the next visit.
+
 Use **Plan setup** to add exercises and assign them to weekdays. Log reps and optional kilograms in **Workout**; set edits save as you type. Mark each set done as you complete it, then complete the exercise once every set is checked. In Plan setup, export a JSON backup before clearing browser data or moving to another device. Importing a backup replaces the data in the current browser. The saved data envelope is versioned (`schemaVersion: 1`).
 
 ## Product Behavior

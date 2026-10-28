@@ -1,7 +1,8 @@
 'use strict';
 
-const CACHE_NAME = 'mygym-app-v1';
-const APP_FILES = ['./', './index.html', './styles.css', './app.js'];
+// Keep this release version aligned with the CSS and JavaScript URLs in index.html.
+const CACHE_NAME = 'mygym-app-v1.1.0';
+const APP_FILES = ['./', './index.html', './styles.css?v=1.1.0', './app.js?v=1.1.0'];
 
 self.addEventListener('install', event => {
   event.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(APP_FILES)).then(() => self.skipWaiting()));
